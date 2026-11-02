@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#18232b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BinHexDec">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>BinHexDec CIEL</title>
+<style>
+@font-face{font-family:"Archivo";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/archivo-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Archivo";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/archivo-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Archivo";font-style:normal;font-weight:800;font-display:swap;src:url(fonts/archivo-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/ibm-plex-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/ibm-plex-mono-latin-600-normal.woff2) format("woff2")}
+/* Layout : établi d'électronique — en-tête "plaque", onglets, panneaux de travail empilés ; bits = LED */
+:root{
+  --bg:#eef1f3; --panel:#ffffff; --ink:#18232b; --muted:#5b6b76; --line:#d3dbe0;
+  --copper:#b25f22; --copper-soft:#f6e6d9; --led:#d8342b; --led-off:#cfd6db; --pcb:#1f6b57; --pcb-soft:#dcefe8;
+  --ok:#1f7a45; --ok-bg:#e1f3e8; --bad:#b3261e; --bad-bg:#fbe5e3;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Consolas",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12181c; --panel:#1a2329; --ink:#e4eaee; --muted:#93a3ad; --line:#2c3a42;
+  --copper:#e08a4a; --copper-soft:#3a2617; --led:#ff5a4e; --led-off:#2f3c44; --pcb:#5cc3a2; --pcb-soft:#173229;
+  --ok:#5fd08e; --ok-bg:#163423; --bad:#ff7a70; --bad-bg:#3a1a18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12181c; --panel:#1a2329; --ink:#e4eaee; --muted:#93a3ad; --line:#2c3a42;
+  --copper:#e08a4a; --copper-soft:#3a2617; --led:#ff5a4e; --led-off:#2f3c44; --pcb:#5cc3a2; --pcb-soft:#173229;
+  --ok:#5fd08e; --ok-bg:#163423; --bad:#ff7a70; --bad-bg:#3a1a18; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light}
+body{margin:0}
+img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,5vw,38px);letter-spacing:-.01em;margin:0;line-height:1.05;text-wrap:balance}
+h1 .b{color:var(--copper)}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px}
+.tag{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pcb);border:1.5px solid var(--pcb);padding:3px 8px;border-radius:3px;white-space:nowrap}
+nav{display:flex;gap:4px;overflow-x:auto;margin:16px 0 18px;padding-bottom:2px}
+nav button{font-family:var(--f-body);font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:9px 14px;border-radius:6px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+nav button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+section{display:grid;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;min-width:0}
+h2{font-family:var(--f-display);font-weight:700;font-size:20px;margin:0 0 4px}
+h3{font-family:var(--f-display);font-weight:700;font-size:16px;margin:0 0 8px}
+p{margin:0 0 10px;max-width:68ch}
+.hint{color:var(--muted);font-size:14px}
+label{font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;letter-spacing:.02em}
+input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:6px;padding:9px 11px;width:100%}
+input.mono{font-family:var(--f-mono);font-size:18px;letter-spacing:.04em}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.grid3{grid-template-columns:1fr}}
+.field .base{font-family:var(--f-mono);font-size:12px;color:var(--copper)}
+.err{color:var(--bad);font-size:13px;min-height:1.2em;margin-top:3px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:600;border:0;border-radius:6px;padding:9px 16px;cursor:pointer;background:var(--copper);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{padding:6px 11px;font-size:13px}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;font-weight:600;background:transparent;color:var(--muted);border:0;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pcb);color:#fff}
+/* LED bits */
+.bus{overflow-x:auto;padding:4px 0 6px}
+.nibbles{display:flex;gap:14px;width:max-content}
+.nib{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.nib .bits{display:flex;gap:4px;padding:8px 8px 6px;border:1.5px dashed var(--line);border-radius:6px}
+.bit{display:flex;flex-direction:column;align-items:center;gap:3px;width:38px}
+.bit button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--led-off);cursor:pointer;font-family:var(--f-mono);font-weight:600;font-size:13px;color:var(--muted);transition:background .12s,box-shadow .12s}
+.bit button.on{background:var(--led);border-color:var(--led);color:#fff;box-shadow:0 0 10px color-mix(in srgb,var(--led) 55%,transparent)}
+.bit .w{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.bit .p{font-family:var(--f-mono);font-size:10px;color:var(--muted);opacity:.75}
+.nib .hx{text-align:center;font-family:var(--f-mono);font-weight:600;font-size:18px;color:var(--copper);background:var(--copper-soft);border-radius:4px;padding:2px 0}
+@media (prefers-reduced-motion:reduce){.bit button{transition:none}}
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums;width:100%}
+th,td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:center;white-space:nowrap}
+th{font-family:var(--f-body);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+td.r{color:var(--led);font-weight:600}
+tr.hl td{background:var(--pcb-soft)}
+.result{font-family:var(--f-mono);font-size:22px;font-weight:600;padding:10px 14px;border-radius:6px;background:var(--pcb-soft);color:var(--ink);overflow-x:auto}
+.result small{font-size:13px;color:var(--muted);font-family:var(--f-body);font-weight:500}
+.split{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.ref td,.ref th{padding:4px 8px}
+/* menu des cours */
+.menu-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.courses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.course{position:relative;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;text-align:left;font:inherit;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:14px 14px 14px 12px;cursor:pointer;transition:border-color .12s,background .12s}
+.course:hover{border-color:var(--muted)}
+.course:disabled{cursor:default}
+.course:disabled:not([aria-pressed="true"]):hover{border-color:var(--line)}
+.course:disabled:not([aria-pressed="true"]){opacity:.45}
+.course[aria-pressed="true"]{border-color:var(--copper);background:var(--copper-soft)}
+.course{align-items:center;min-height:52px;padding:12px}
+#menu{margin-top:16px}
+.mine td,.mine th{font-family:var(--f-body)}
+.course .t{font-size:15px;min-width:0;overflow-wrap:anywhere}
+.course .box{width:22px;height:22px;border-radius:5px;border:2px solid var(--line);background:var(--bg);display:grid;place-items:center;font-size:14px;font-weight:700;color:#fff;margin-top:2px}
+.course[aria-pressed="true"] .box{background:var(--copper);border-color:var(--copper)}
+.course .t{font-family:var(--f-display);font-weight:700;font-size:16px}
+.course .d{font-size:13.5px;color:var(--muted)}
+.course .ex{font-family:var(--f-mono);font-size:13px;color:var(--pcb)}
+.course .lvl{position:absolute;top:12px;right:12px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.menu-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px}
+/* menu évolutif : détaillé sur grand écran, puis de moins en moins de texte et de colonnes */
+.courses{grid-template-columns:repeat(3,minmax(0,1fr))}
+.course{align-items:start;min-height:0;padding:14px 14px 14px 12px}
+.course .box{grid-row:1/4}
+.course .t{font-size:16px;padding-right:76px}
+.course .t .s{display:none}
+@media (max-width:899px){
+  .courses{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .course .d,.menu-intro{display:none}
+}
+@media (max-width:599px){
+  .course{align-items:center;min-height:52px;padding:12px}
+  .course .box{grid-row:auto}
+  .course .lvl,.course .ex,#m-count{display:none}
+  .course .t{font-size:15px;padding-right:0}
+  .course .t .f{display:none}
+  .course .t .s{display:inline}
+  .menu-bar{justify-content:flex-end}
+}
+@media (max-width:379px){
+  .courses{grid-template-columns:1fr}
+}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+nav button.home{color:var(--copper);border-color:var(--copper)}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.pager .btn{min-width:0}
+/* unités */
+.units-tbl td:first-child,.units-tbl th:first-child{text-align:left}
+.units-tbl td.big{color:var(--copper);font-weight:600}
+.callout{border-left:4px solid var(--copper);background:var(--copper-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px;max-width:none}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+.octet{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-family:var(--f-mono)}
+.octet span{width:26px;height:26px;display:grid;place-items:center;border-radius:4px;background:var(--pcb-soft);color:var(--pcb);font-weight:600;font-size:13px}
+.octet span.gap{width:8px;background:transparent}
+/* tableau binaire */
+.tb th,.tb td{min-width:46px}
+.tb th{font-family:var(--f-mono);font-size:13px;text-transform:none;letter-spacing:0;color:var(--ink)}
+.tb th.lab,.tb td.lab{font-family:var(--f-body);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left}
+.tb td.b{font-size:20px;font-weight:600;color:var(--muted)}
+.tb td.b.one{color:var(--led)}
+.tb td.cur{background:var(--copper-soft);outline:2px solid var(--copper);outline-offset:-2px}
+.tb td.todo{color:var(--line)}
+#tb-steps tr.cur td{background:var(--copper-soft)}
+#tb-steps td.yes{color:var(--ok);font-weight:600} #tb-steps td.no{color:var(--muted)}
+/* sous-onglets */
+.subtabs{display:flex;gap:2px;border-bottom:2px solid var(--line);overflow-x:auto}
+.subtabs button{font:inherit;font-weight:600;font-size:14px;background:transparent;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--muted);padding:8px 14px;cursor:pointer;white-space:nowrap}
+.subtabs button[aria-selected="true"]{color:var(--copper);border-bottom-color:var(--copper)}
+.pane{display:grid;gap:16px}
+.fb.tip{background:var(--copper-soft);color:var(--ink)}
+.fb.sol{background:var(--pcb-soft);color:var(--ink)}
+.fb b{font-family:var(--f-mono)}
+/* identité */
+.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:600}
+.who span{font-family:var(--f-mono);font-size:14px;background:var(--pcb-soft);color:var(--pcb);padding:5px 10px;border-radius:4px}
+.login{max-width:720px}
+/* mobile */
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+@media (pointer:coarse){.btn,nav button,.subtabs button,.seg button{min-height:44px}.btn.small{min-height:40px}.bit button{width:34px;height:34px}}
+@media (max-width:520px){h1{font-size:28px}.card{padding:14px}.qtext b{font-size:22px}.score{font-size:46px}}
+/* étude multi-cours */
+.cblock{display:grid;gap:16px;scroll-margin-top:12px}
+.cblock + .cblock{margin-top:18px}
+.cb-title{font-family:var(--f-display);font-weight:800;font-size:22px;margin:0;padding-top:12px;border-top:2px solid var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+/* quiz */
+.qbox{border:2px solid var(--ink);border-radius:8px;padding:18px;display:grid;gap:12px}
+.qhead{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--copper);width:0}
+.qtext{font-size:18px}
+.qtext b{font-family:var(--f-mono);font-size:24px;color:var(--copper);word-break:break-all}
+.fb{padding:10px 12px;border-radius:6px;font-size:14px}
+.fb.ok{background:var(--ok-bg);color:var(--ok)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.score{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:1;color:var(--copper)}
+.checks{display:flex;flex-wrap:wrap;gap:8px 16px}
+.checks label{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--ink);font-size:14px;margin:0}
+.checks input{width:auto}
+textarea{width:100%;font-family:var(--f-mono);font-size:12px;min-height:110px;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:6px;padding:8px}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px}
+.pill.g{background:var(--ok-bg);color:var(--ok)} .pill.m{background:var(--copper-soft);color:var(--copper)} .pill.r{background:var(--bad-bg);color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Bin<span class="b">·</span>Hex<span class="b">·</span>Déc</h1>
+    <p class="sub">Conversions entre bases 2, 10 et 16 — Bac Pro CIEL</p>
+  </div>
+  <div class="who" id="who" hidden><span id="who-txt"></span></div>
+</header>
+
+<nav role="tablist" aria-label="Navigation" id="nav">
+  <button role="tab" class="home" data-tab="menu" aria-selected="true">☰ Menu des cours</button>
+</nav>
+
+<!-- 0. Menu -->
+<section id="login" hidden>
+  <div class="card login">
+    <h2>Identifie-toi</h2>
+        <form id="lg-form" autocomplete="off" style="display:grid;gap:12px">
+      <div class="grid3">
+        <div><label for="lg-nom">Nom</label><input id="lg-nom" placeholder="ex. DUPONT" maxlength="40"></div>
+        <div><label for="lg-prenom">Prénom</label><input id="lg-prenom" placeholder="ex. Léa" maxlength="40"></div>
+        <div><label for="lg-classe">Classe</label><select id="lg-classe"><option value="">Choisis ta classe</option></select></div>
+      </div>
+      <div class="err" id="lg-err"></div>
+      <div class="row"><button class="btn" type="submit">Entrer dans l'application</button></div>
+    </form>
+  </div>
+</section>
+
+<section id="menu">
+  <div class="card" style="display:grid;gap:14px">
+    <div><h2>Choisis tes cours</h2><p class="hint menu-intro" style="margin:4px 0 0">Coche un ou plusieurs cours, puis clique sur « Commencer ». En revenant ici, tu pourras choisir le même cours ou d'autres.</p></div>
+    <div class="courses" id="m-list"></div>
+    <div class="menu-bar">
+      <span class="hint" id="m-count"></span>
+      <button class="btn" id="m-go" disabled>Commencer</button>
+    </div>
+  </div>
+  <div class="card" id="mine" hidden>
+    <h2>Mes résultats</h2>
+    <p class="hint" id="mine-sum" style="margin:2px 0 0"></p>
+    <div class="tbl" style="margin-top:8px"><table class="mine"><thead><tr><th>Date</th><th>Évaluation</th><th>Note</th></tr></thead><tbody id="mine-body"></tbody></table></div>
+  </div>
+</section>
+
+<!-- Étude : cours, exercices et évaluation des cours choisis -->
+<section id="etude" hidden>
+  <div class="subtabs" role="tablist" aria-label="Parties" id="et-tabs"><button data-p="cours" aria-selected="true">Cours</button><button data-p="exo" aria-selected="false">Exercices</button><button data-p="eval" aria-selected="false">Évaluation</button></div>
+  <div class="pane" data-pane="cours">
+    <div class="chips" id="et-chips" hidden></div>
+  <div class="cblock" data-c="convertir" hidden>
+    <h2 class="cb-title">Convertisseur</h2>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+      <div><h2>Convertisseur instantané</h2><p class="hint" style="margin:0">Tape dans une case ou clique sur les LED : les trois bases se mettent à jour.</p></div>
+      <span class="tag">8 bits · 1 octet</span>
+    </div>
+    <div class="grid3">
+      <div class="field"><label for="c-dec">Décimal <span class="base">(10)</span></label><input id="c-dec" class="mono" inputmode="numeric" maxlength="3" autocomplete="off"><div class="err" id="e-dec"></div></div>
+      <div class="field"><label for="c-bin">Binaire <span class="base">(2)</span></label><input id="c-bin" class="mono" inputmode="numeric" maxlength="9" autocomplete="off"><div class="err" id="e-bin"></div></div>
+      <div class="field"><label for="c-hex">Hexadécimal <span class="base">(16)</span></label><input id="c-hex" class="mono" maxlength="2" autocomplete="off" style="text-transform:uppercase"><div class="err" id="e-hex"></div></div>
+    </div>
+    <h3 style="margin-top:8px">Bus de données</h3>
+    <div class="bus"><div class="nibbles" id="leds"></div></div>
+    <p class="hint" id="c-range" style="margin-top:6px"></p>
+  </div>
+  </div>
+  <div class="cblock" data-c="dec-bin" hidden>
+    <h2 class="cb-title">Décimal → binaire</h2>
+  <div class="card">
+    <h2>Décimal → binaire : le tableau binaire</h2>
+    <p class="hint">On écrit les poids 2<sup>n</sup> de gauche à droite (128, 64, 32, 16, 8, 4, 2, 1). Pour chaque poids, on se demande : « Est-ce que je peux le retirer du reste ? » Si oui, on écrit <strong>1</strong> et on soustrait ; sinon on écrit <strong>0</strong>.</p>
+    <div class="row" style="align-items:flex-end">
+      <div style="flex:1;max-width:260px"><label for="db-in">Nombre décimal (0 à 255)</label><input id="db-in" class="mono" inputmode="numeric" maxlength="3" value="156"></div>
+      <button class="btn ghost" id="tb-step">Étape suivante</button>
+      <button class="btn ghost" id="tb-all">Tout afficher</button>
+      <button class="btn ghost" id="tb-reset">Recommencer</button>
+    </div>
+    <div class="err" id="db-err"></div>
+    <div class="tbl" style="margin-top:6px"><table class="tb" id="tb-grid"></table></div>
+    <div class="tbl" style="margin-top:14px"><table id="tb-steps"><thead><tr><th>Poids</th><th>Reste</th><th>Je peux retirer ?</th><th>Bit</th><th>Nouveau reste</th></tr></thead><tbody></tbody></table></div>
+    <div class="result" id="tb-res" style="margin-top:12px"></div>
+  </div>
+
+  <details class="card">
+    <summary style="cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:16px">Autre méthode : divisions successives par 2</summary>
+    <p class="hint" style="margin-top:10px">On divise par 2 jusqu'à obtenir un quotient nul. Le résultat se lit en remontant les restes, du dernier au premier.</p>
+    <div class="split" style="margin-top:8px">
+      <div class="tbl"><table><thead><tr><th>Dividende</th><th>÷ 2</th><th>Quotient</th><th>Reste</th><th>Rang</th></tr></thead><tbody id="db-body"></tbody></table></div>
+      <div style="display:grid;gap:10px;align-content:start">
+        <div class="result" id="db-res"></div>
+        <p class="hint" id="db-read"></p>
+      </div>
+    </div>
+  </details>
+  
+  </div>
+  <div class="cblock" data-c="bin-dec" hidden>
+    <h2 class="cb-title">Binaire → décimal</h2>
+  <div class="card">
+    <h2>Binaire → décimal : méthode des poids</h2>
+    <p class="hint">Chaque bit à 1 apporte son poids 2<sup>n</sup>. On additionne les poids des bits à 1.</p>
+    <div class="row" style="max-width:420px"><div style="flex:1"><label for="bd-in">Nombre binaire (8 bits)</label><input id="bd-in" class="mono" inputmode="numeric" maxlength="9" value="1011 0101"></div></div>
+    <div class="err" id="bd-err"></div>
+    <div class="tbl" style="margin-top:8px"><table id="bd-tbl"></table></div>
+    <div class="result" id="bd-res" style="margin-top:12px"></div>
+  </div>
+  
+  </div>
+  <div class="cblock" data-c="bin-hex" hidden>
+    <h2 class="cb-title">Binaire ↔ hexadécimal</h2>
+  <div class="split">
+    <div class="card">
+      <h2>Binaire ↔ hexadécimal : les quartets</h2>
+      <p class="hint">On découpe le binaire en paquets de 4 bits en partant de la droite (on complète à gauche par des 0). Chaque quartet donne un chiffre hexadécimal.</p>
+      <div class="grid3" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div><label for="bh-bin">Binaire</label><input id="bh-bin" class="mono" inputmode="numeric" maxlength="9" value="1101 0111"></div>
+        <div><label for="bh-hex">Hexadécimal</label><input id="bh-hex" class="mono" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+      <div class="err" id="bh-err"></div>
+      <div class="bus"><div class="nibbles" id="bh-nibs"></div></div>
+      <div class="result" id="bh-res" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>Table de correspondance</h3>
+      <div class="tbl"><table class="ref" id="ref"></table></div>
+    </div>
+  </div>
+  
+  </div>
+  <div class="cblock" data-c="hex-dec" hidden>
+    <h2 class="cb-title">Hexadécimal → décimal</h2>
+  <div class="card">
+    <h2>Hexadécimal → décimal : puissances de 16</h2>
+    <p class="hint">Chaque chiffre est multiplié par son poids 16<sup>n</sup> (A = 10 … F = 15), puis on additionne.</p>
+    <div class="row" style="max-width:420px"><div style="flex:1"><label for="hd-in">Nombre hexadécimal (00 à FF)</label><input id="hd-in" class="mono" maxlength="2" value="2F" style="text-transform:uppercase"></div></div>
+    <div class="err" id="hd-err"></div>
+    <div class="tbl" style="margin-top:8px"><table id="hd-tbl"></table></div>
+    <div class="result" id="hd-res" style="margin-top:12px"></div>
+  </div>
+  
+  </div>
+  <div class="cblock" data-c="unites" hidden>
+    <h2 class="cb-title">Unités en informatique</h2>
+  <div class="card">
+    <h2>Unités en informatique</h2>
+    <p class="hint">Le <strong>bit</strong> (b) est la plus petite information : 0 ou 1. On regroupe les bits pour former des unités plus grandes.</p>
+    <div class="tbl"><table class="units-tbl">
+      <thead><tr><th>Unité</th><th>Symbole</th><th>Taille</th><th>Valeurs possibles</th></tr></thead>
+      <tbody>
+        <tr><td>Bit</td><td>b</td><td>1 bit</td><td>2 (0 ou 1)</td></tr>
+        <tr><td>Quartet</td><td>—</td><td>4 bits</td><td>16 (0 à F)</td></tr>
+        <tr><td>Octet</td><td>o (en anglais : B, byte)</td><td>8 bits</td><td>256 (0 à 255)</td></tr>
+        <tr><td>Mot de 16 bits</td><td>—</td><td>2 octets</td><td>65 536</td></tr>
+      </tbody></table></div>
+    <div class="octet" style="margin-top:12px" aria-label="Un octet : deux quartets">
+      <span>1</span><span>0</span><span>1</span><span>1</span><span class="gap"></span><span>0</span><span>1</span><span>0</span><span>1</span>
+      <span class="hint" style="margin-left:8px;font-family:var(--f-body)">1 octet = 2 quartets = 8 bits</span>
+    </div>
+    <p class="callout" style="margin-top:12px">Attention aux majuscules : <strong>b</strong> = bit, <strong>B</strong> = byte (octet). 100 Mb/s ≠ 100 MB/s.</p>
+  </div>
+
+  <div class="card">
+    <h2>Les multiples</h2>
+    <p class="hint">Deux systèmes coexistent. Les fabricants de disques utilisent les préfixes décimaux (×1 000), alors que la mémoire vive et Windows comptent en puissances de 2 (×1 024).</p>
+    <div class="grid2">
+      <div class="tbl"><h3>Préfixes décimaux (SI)</h3><table class="units-tbl">
+        <thead><tr><th>Nom</th><th>Symbole</th><th>Valeur</th></tr></thead>
+        <tbody>
+          <tr><td>kilooctet</td><td>ko</td><td>10³ = 1 000 o</td></tr>
+          <tr><td>mégaoctet</td><td>Mo</td><td>10⁶ = 1 000 ko</td></tr>
+          <tr><td>gigaoctet</td><td>Go</td><td>10⁹ = 1 000 Mo</td></tr>
+          <tr><td>téraoctet</td><td>To</td><td>10¹² = 1 000 Go</td></tr>
+        </tbody></table></div>
+      <div class="tbl"><h3>Préfixes binaires (CEI)</h3><table class="units-tbl">
+        <thead><tr><th>Nom</th><th>Symbole</th><th>Valeur</th></tr></thead>
+        <tbody>
+          <tr><td>kibioctet</td><td>Kio</td><td>2¹⁰ = 1 024 o</td></tr>
+          <tr><td>mébioctet</td><td>Mio</td><td>2²⁰ = 1 024 Kio</td></tr>
+          <tr><td>gibioctet</td><td>Gio</td><td>2³⁰ = 1 024 Mio</td></tr>
+          <tr><td>tébioctet</td><td>Tio</td><td>2⁴⁰ = 1 024 Gio</td></tr>
+        </tbody></table></div>
+    </div>
+    <p class="callout" style="margin-top:12px">Exemple : un disque vendu « 1 To » contient 10¹² octets. Windows divise par 2³⁰ et affiche environ 931 « Go » (en réalité des Gio). Il ne manque rien, seule l'unité change.</p>
+  </div>
+
+  <div class="card">
+    <h2>Convertisseur d'unités</h2>
+    <div class="grid2" style="max-width:520px">
+      <div><label for="u-val">Valeur</label><input id="u-val" class="mono" inputmode="decimal" value="1"></div>
+      <div><label for="u-from">Unité</label><select id="u-from"></select></div>
+    </div>
+    <div class="err" id="u-err"></div>
+    <div class="grid2" style="margin-top:6px">
+      <div class="tbl"><table class="units-tbl" id="u-dec"></table></div>
+      <div class="tbl"><table class="units-tbl" id="u-bin"></table></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Débit et temps de téléchargement</h2>
+    <p class="hint">Les débits réseau s'expriment en <strong>bits par seconde</strong> (kbit/s, Mbit/s, Gbit/s). Pour passer en octets par seconde, on divise par 8.</p>
+    <div class="grid2">
+      <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label for="t-size">Taille du fichier</label><input id="t-size" class="mono" inputmode="decimal" value="4"></div><div style="width:100px"><label for="t-su">&nbsp;</label><select id="t-su"><option>Mo</option><option selected>Go</option><option>Mio</option><option>Gio</option></select></div></div>
+      <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label for="t-rate">Débit de la connexion</label><input id="t-rate" class="mono" inputmode="decimal" value="100"></div><div style="width:110px"><label for="t-ru">&nbsp;</label><select id="t-ru"><option>kbit/s</option><option selected>Mbit/s</option><option>Gbit/s</option></select></div></div>
+    </div>
+    <div class="err" id="t-err"></div>
+    <div class="result" id="t-res" style="margin-top:6px"></div>
+    <p class="hint" id="t-how" style="margin-top:8px"></p>
+  </div>
+  
+  </div>
+  </div>
+  <div class="pane" data-pane="exo" id="et-exo" hidden></div>
+  <div class="pane" data-pane="eval" id="et-eval" hidden></div>
+</section>
+
+<div class="pager" id="pager" hidden>
+  <button class="btn ghost" id="p-prev"></button>
+  <button class="btn" id="p-next"></button>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const HEXD="0123456789ABCDEF";
+const pad=(s,n)=>s.padStart(n,"0");
+const grp=s=>s.replace(/\B(?=(\d{4})+(?!\d))/g," ");
+
+/* ---- menu des cours ---- */
+const COURS=[
+  {id:"convertir",t:"Convertisseur",s:"Convertisseur",lvl:"Découverte",d:"Manipule les bits avec des LED et vois les trois bases changer en même temps.",ex:"1011 0101 = B5 = 181"},
+  {id:"dec-bin",t:"Décimal → binaire",s:"Déc → Bin",lvl:"Méthode",d:"Le tableau binaire : on retire les poids 128, 64, 32… un par un.",ex:"156 = 128+16+8+4"},
+  {id:"bin-dec",t:"Binaire → décimal",s:"Bin → Déc",lvl:"Méthode",d:"La méthode des poids : on additionne les puissances de 2.",ex:"1011 → 8+2+1 = 11"},
+  {id:"bin-hex",t:"Binaire ↔ hexadécimal",s:"Bin ↔ Hex",lvl:"Méthode",d:"Le découpage en quartets et la table 0 à F.",ex:"1101 0111 → D7"},
+  {id:"hex-dec",t:"Hexadécimal → décimal",s:"Hex → Déc",lvl:"Méthode",d:"Les puissances de 16 et les lettres A à F.",ex:"2F → 2×16 + 15 = 47"},
+  {id:"unites",t:"Unités en informatique",s:"Unités",lvl:"Notions",d:"Bit, octet, multiples ko/Mo/Go et Kio/Mio/Gio, débits en Mbit/s.",ex:"1 Kio = 1 024 o"},
+  {id:"generale",t:"Évaluation générale",s:"Évaluation générale",lvl:"Test noté",d:"Un test sur 20 qui mélange tous les cours, sans choix du thème.",ex:"tous les cours · note /20"}
+];
+const SELKEY="binhexdec_ciel_cours", LOCKKEY="binhexdec_ciel_verrou";
+const selStore=(()=>{try{return window.localStorage}catch(e){return null}})();
+const selLocked=false;
+let sel=(()=>{try{const a=JSON.parse(selStore.getItem(SELKEY));return Array.isArray(a)?a:[]}catch(e){return []}})();
+const ordered=()=>COURS.map(c=>c.id).filter(id=>sel.includes(id));
+function renderMenu(){
+  $("#m-list").innerHTML=COURS.map(c=>`<button class="course" data-c="${c.id}" aria-pressed="${sel.includes(c.id)}"${selLocked?" disabled":""}><span class="box">${sel.includes(c.id)?"✓":""}</span><span class="lvl">${c.lvl}</span><span class="t"><span class="f">${c.t}</span><span class="s">${c.s}</span></span><span class="d">${c.d}</span><span class="ex">${c.ex}</span></button>`).join("");
+  document.querySelectorAll(".course").forEach(b=>b.onclick=()=>{if(selLocked)return;const id=b.dataset.c;
+    sel=sel.includes(id)?sel.filter(x=>x!==id):[...sel,id];saveSel();renderMenu()});
+  const n=sel.length;
+  $("#m-count").textContent=n?`${n} cours sélectionné${n>1?"s":""}`:"Aucun cours sélectionné.";
+  $("#m-go").disabled=!n; $("#m-go").textContent="Commencer →";
+  updateNav();
+}
+function saveSel(){try{selStore.setItem(SELKEY,JSON.stringify(sel));selStore.setItem(LOCKKEY,selLocked?"1":"0")}catch(e){}}
+$("#m-go").onclick=()=>{if(!sel.length)return;startStudy();go("etude")};
+
+/* ---- navigation ---- */
+const tabs=[...document.querySelectorAll("#nav button")];
+function updateNav(){tabs.forEach(b=>{if(b.dataset.tab!=="menu")b.hidden=!sel.includes(b.dataset.tab)})}
+function go(id){location.hash=id;show(id)}
+function show(id){
+  if(!window.__meReady||!ME) id="login";
+  else if(!["menu","etude"].includes(id)||(id==="etude"&&!sel.length)) id="menu";
+  tabs.forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));
+  if(id==="menu"&&sel.length){sel=[];saveSel();renderMenu()}
+  document.getElementById("nav").hidden=(id==="menu"||id==="login");
+  document.querySelectorAll("section").forEach(s=>s.hidden=s.id!==id);
+  $("#pager").hidden=true;
+  window.scrollTo({top:0});
+}
+tabs.forEach(b=>b.onclick=()=>go(b.dataset.tab));
+window.addEventListener("hashchange",()=>show(location.hash.slice(1)));
+/* l'évaluation porte par défaut sur les cours choisis */
+const TYPES_OF={"dec-bin":["d2b"],"bin-dec":["b2d"],"bin-hex":["b2h","h2b"],"hex-dec":["h2d"],"convertir":["d2h"],"unites":["uni"]};
+renderMenu();
+
+/* ---- 1. convertisseur ---- */
+let size=8, val=181;
+const cDec=$("#c-dec"),cBin=$("#c-bin"),cHex=$("#c-hex");
+function renderLeds(){
+  const bits=pad(val.toString(2),size), box=$("#leds"); box.innerHTML="";
+  for(let n=0;n<size/4;n++){
+    const q=bits.slice(n*4,n*4+4), nib=document.createElement("div"); nib.className="nib";
+    const row=document.createElement("div"); row.className="bits";
+    for(let i=0;i<4;i++){
+      const pos=size-1-(n*4+i), on=q[i]==="1";
+      const d=document.createElement("div"); d.className="bit";
+      d.innerHTML=`<span class="p">2<sup>${pos}</sup></span><button class="${on?"on":""}" aria-pressed="${on}" aria-label="bit ${pos}">${q[i]}</button><span class="w">${2**pos}</span>`;
+      d.querySelector("button").onclick=()=>{val^=(1<<pos);sync()};
+      row.appendChild(d);
+    }
+    nib.appendChild(row);
+    const hx=document.createElement("div"); hx.className="hx"; hx.textContent=HEXD[parseInt(q,2)]; nib.appendChild(hx);
+    box.appendChild(nib);
+  }
+  $("#c-range").textContent=`Sur ${size} bits : de 0 à ${2**size-1} en décimal, de ${"0".repeat(size/4)} à ${"F".repeat(size/4)} en hexadécimal.`;
+}
+function sync(skip){
+  if(skip!=="dec") cDec.value=val;
+  if(skip!=="bin") cBin.value=grp(pad(val.toString(2),size));
+  if(skip!=="hex") cHex.value=pad(val.toString(16).toUpperCase(),size/4);
+  ["dec","bin","hex"].forEach(k=>$("#e-"+k).textContent="");
+  renderLeds();
+}
+function onInput(kind,raw){
+  const s=raw.replace(/\s/g,"").toUpperCase(); const max=2**size-1; let v;
+  if(s===""){return}
+  if(kind==="dec"){ if(!/^\d+$/.test(s)) return $("#e-dec").textContent="Chiffres 0 à 9 uniquement."; v=parseInt(s,10);}
+  if(kind==="bin"){ if(!/^[01]+$/.test(s)) return $("#e-bin").textContent="Seulement des 0 et des 1."; v=parseInt(s,2);}
+  if(kind==="hex"){ if(!/^[0-9A-F]+$/.test(s)) return $("#e-hex").textContent="Chiffres 0–9 et lettres A–F."; v=parseInt(s,16);}
+  if(v>max) return $("#e-"+kind).textContent=`Trop grand : sur 8 bits, la valeur maximale est 255 (1111 1111 = FF).`;
+  val=v; sync(kind);
+}
+cDec.oninput=e=>onInput("dec",e.target.value);
+cBin.oninput=e=>onInput("bin",e.target.value);
+cHex.oninput=e=>onInput("hex",e.target.value);
+[cDec,cBin,cHex].forEach(i=>i.onblur=()=>sync());
+sync();
+
+/* ---- 2. déc → bin ---- */
+function decBin(){
+  const s=$("#db-in").value.trim(), body=$("#db-body"); body.innerHTML=""; $("#db-err").textContent="";
+  if(!/^\d+$/.test(s)||+s>255){$("#db-err").textContent="Entre un entier entre 0 et 255 (8 bits).";$("#db-res").textContent="";$("#db-read").textContent="";return}
+  let n=+s; const rests=[];
+  if(n===0){body.innerHTML="<tr><td>0</td><td>÷ 2</td><td>0</td><td class='r'>0</td><td>2<sup>0</sup></td></tr>";rests.push(0)}
+  let k=0;
+  while(n>0){const q=Math.floor(n/2),r=n%2;rests.push(r);
+    body.insertAdjacentHTML("beforeend",`<tr><td>${n}</td><td>÷ 2</td><td>${q}</td><td class="r">${r}</td><td>2<sup>${k}</sup></td></tr>`);n=q;k++}
+  const b=rests.slice().reverse().join("");
+  $("#db-res").innerHTML=`${s}<small> (10)</small> = ${grp(pad(b,8))}<small> (2)</small>`;
+  $("#db-read").textContent=`Lecture de bas en haut : ${rests.slice().reverse().join(" → ")}. Le premier reste obtenu est le bit de poids faible (2⁰).`;
+}
+let tb={n:0,bits:8,step:0};
+function tbInit(){
+  const s=$("#db-in").value.trim();
+  if(!/^\d+$/.test(s)||+s>255){$("#tb-grid").innerHTML="";$("#tb-steps tbody").innerHTML="";$("#tb-res").textContent="";return false}
+  const n=+s; tb={n,bits:8,step:0}; return true;
+}
+function tbRender(){
+  const {n,bits,step}=tb; let r=n; const rows=[];
+  for(let i=0;i<bits;i++){const w=2**(bits-1-i),ok=r>=w,nr=ok?r-w:r;rows.push({w,r,ok,nr});r=nr}
+  let head="<tr><th class='lab'>Poids</th>",pw="<tr><td class='lab'>2<sup>n</sup></td>",bt="<tr><td class='lab'>Bit</td>";
+  rows.forEach((x,i)=>{head+=`<th>${x.w}</th>`;pw+=`<td style="font-size:11px;color:var(--muted)">2<sup>${bits-1-i}</sup></td>`;
+    const done=i<step;bt+=`<td class="b ${done&&x.ok?"one":""} ${i===step-1?"cur":""} ${done?"":"todo"}">${done?(x.ok?1:0):"?"}</td>`});
+  $("#tb-grid").innerHTML=head+"</tr>"+pw+"</tr>"+bt+"</tr>";
+  $("#tb-steps tbody").innerHTML=rows.slice(0,step).map((x,i)=>`<tr class="${i===step-1?"cur":""}"><td>${x.w}</td><td>${x.r}</td><td class="${x.ok?"yes":"no"}">${x.ok?`oui : ${x.r} ≥ ${x.w}`:`non : ${x.r} < ${x.w}`}</td><td class="r">${x.ok?1:0}</td><td>${x.ok?`${x.r} − ${x.w} = ${x.nr}`:x.nr}</td></tr>`).join("");
+  const done=step>=bits, b=rows.map(x=>x.ok?1:0).join("");
+  $("#tb-step").disabled=done;$("#tb-all").disabled=done;
+  $("#tb-res").innerHTML=done?`${n}<small> (10)</small> = ${grp(b)}<small> (2)</small> &nbsp;<small>vérification : ${rows.filter(x=>x.ok).map(x=>x.w).join(" + ")||"0"} = ${n}</small>`
+    :`<small>Reste à placer : ${rows[step]?rows[step].r:0} — prochain poids : ${rows[step].w}</small>`;
+}
+$("#tb-step").onclick=()=>{tb.step++;tbRender()};
+$("#tb-all").onclick=()=>{tb.step=tb.bits;tbRender()};
+$("#tb-reset").onclick=()=>{tb.step=0;tbRender()};
+$("#db-in").oninput=()=>{decBin();if(tbInit())tbRender()};
+decBin(); tbInit(); tb.step=tb.bits; tbRender();
+
+/* ---- 3. bin → déc ---- */
+function binDec(){
+  let s=$("#bd-in").value.replace(/\s/g,""); $("#bd-err").textContent="";
+  if(!/^[01]{1,8}$/.test(s)){$("#bd-err").textContent="Entre 1 à 8 chiffres binaires (0 ou 1).";$("#bd-tbl").innerHTML="";$("#bd-res").textContent="";return}
+  s=pad(s,8); const L=8; let h1="<tr><th>Rang</th>",h2="<tr><th>Poids</th>",h3="<tr><th>Bit</th>",h4="<tr><th>Valeur</th>"; const parts=[];
+  for(let i=0;i<L;i++){const p=L-1-i,w=2**p,b=s[i];
+    h1+=`<td>2<sup>${p}</sup></td>`;h2+=`<td>${w}</td>`;h3+=`<td class="${b==="1"?"r":""}">${b}</td>`;h4+=`<td>${b==="1"?w:"·"}</td>`;if(b==="1")parts.push(w)}
+  $("#bd-tbl").innerHTML=h1+"</tr>"+h2+"</tr>"+h3+"</tr>"+h4+"</tr>";
+  $("#bd-res").innerHTML=`${parts.length?parts.join(" + "):"0"} = ${parseInt(s,2)}<small> (10)</small>`;
+}
+$("#bd-in").oninput=binDec; binDec();
+
+/* ---- 4. bin ↔ hex ---- */
+let ref="<tr><th>Déc</th><th>Hex</th><th>Bin</th></tr>";
+for(let i=0;i<16;i++) ref+=`<tr data-h="${HEXD[i]}"><td>${i}</td><td>${HEXD[i]}</td><td>${pad(i.toString(2),4)}</td></tr>`;
+$("#ref").innerHTML=ref;
+function bhRender(bin){
+  const L=8, full=pad(bin,8), box=$("#bh-nibs"); box.innerHTML="";
+  const used=new Set();
+  for(let n=0;n<L/4;n++){const q=full.slice(n*4,n*4+4),h=HEXD[parseInt(q,2)];used.add(h);
+    const nib=document.createElement("div");nib.className="nib";
+    nib.innerHTML=`<div class="bits">${[...q].map((c,i)=>`<div class="bit"><button tabindex="-1" class="${c==="1"?"on":""}" aria-hidden="true">${c}</button><span class="w">${8>>i}</span></div>`).join("")}</div><div class="hx">${h}</div>`;
+    box.appendChild(nib)}
+  document.querySelectorAll("#ref tr[data-h]").forEach(r=>r.classList.toggle("hl",used.has(r.dataset.h)));
+  const hex=parseInt(bin,2).toString(16).toUpperCase();
+  $("#bh-res").innerHTML=`${grp(full)}<small> (2)</small> = ${pad(hex,L/4)}<small> (16)</small>`;
+  return hex;
+}
+$("#bh-bin").oninput=e=>{const s=e.target.value.replace(/\s/g,"");$("#bh-err").textContent="";
+  if(!/^[01]{1,8}$/.test(s)){$("#bh-err").textContent="Entre 1 à 8 chiffres binaires (8 bits).";return}
+  $("#bh-hex").value=bhRender(s)};
+$("#bh-hex").oninput=e=>{const s=e.target.value.trim().toUpperCase();$("#bh-err").textContent="";
+  if(!/^[0-9A-F]{1,2}$/.test(s)){$("#bh-err").textContent="Entre 1 ou 2 chiffres hexadécimaux (00 à FF).";return}
+  const b=[...pad(s,2)].map(c=>pad(parseInt(c,16).toString(2),4)).join("");$("#bh-bin").value=grp(b);bhRender(b)};
+$("#bh-bin").dispatchEvent(new Event("input"));
+
+/* ---- 5. hex → déc ---- */
+function hexDec(){
+  let s=$("#hd-in").value.trim().toUpperCase(); $("#hd-err").textContent="";
+  if(!/^[0-9A-F]{1,2}$/.test(s)){$("#hd-err").textContent="Entre 1 ou 2 chiffres hexadécimaux (00 à FF).";$("#hd-tbl").innerHTML="";$("#hd-res").textContent="";return}
+  s=pad(s,2); const L=2; let h1="<tr><th>Rang</th>",h2="<tr><th>Poids</th>",h3="<tr><th>Chiffre</th>",h4="<tr><th>Valeur</th>",h5="<tr><th>Produit</th>"; const parts=[];
+  for(let i=0;i<L;i++){const p=L-1-i,w=16**p,v=parseInt(s[i],16);
+    h1+=`<td>16<sup>${p}</sup></td>`;h2+=`<td>${w}</td>`;h3+=`<td class="r">${s[i]}</td>`;h4+=`<td>${v}</td>`;h5+=`<td>${v} × ${w} = ${v*w}</td>`;parts.push(v*w)}
+  $("#hd-tbl").innerHTML=h1+"</tr>"+h2+"</tr>"+h3+"</tr>"+h4+"</tr>"+h5+"</tr>";
+  $("#hd-res").innerHTML=`${parts.join(" + ")} = ${parseInt(s,16)}<small> (10)</small>`;
+}
+$("#hd-in").oninput=hexDec; hexDec();
+
+/* ---- 6. unités ---- */
+const nf=(x)=>{ if(x===0) return "0"; const a=Math.abs(x);
+  if(a>=1) return x.toLocaleString("fr-FR",{maximumFractionDigits:3});
+  return x.toLocaleString("fr-FR",{maximumSignificantDigits:4}); };
+const UNITS=[["bit",1,"b"],["octet",8,"b"],["ko",8e3,"d"],["Mo",8e6,"d"],["Go",8e9,"d"],["To",8e12,"d"],["Kio",8*2**10,"i"],["Mio",8*2**20,"i"],["Gio",8*2**30,"i"],["Tio",8*2**40,"i"]];
+$("#u-from").innerHTML=UNITS.map(u=>`<option${u[0]==="Go"?" selected":""}>${u[0]}</option>`).join("");
+function units(){
+  const raw=$("#u-val").value.replace(/\s/g,"").replace(",","."), v=parseFloat(raw); $("#u-err").textContent="";
+  if(!/^\d*\.?\d+$/.test(raw)){$("#u-err").textContent="Entre un nombre positif (virgule acceptée).";return}
+  const bits=v*UNITS.find(u=>u[0]===$("#u-from").value)[1];
+  const row=u=>`<tr><td>${u[0]}</td><td class="big">${nf(bits/u[1])}</td></tr>`;
+  $("#u-dec").innerHTML="<thead><tr><th>Unité (base, ×1 000)</th><th>Valeur</th></tr></thead><tbody>"+UNITS.filter(u=>u[2]!=="i").map(row).join("")+"</tbody>";
+  $("#u-bin").innerHTML="<thead><tr><th>Unité binaire (×1 024)</th><th>Valeur</th></tr></thead><tbody>"+UNITS.filter(u=>u[2]==="i").map(row).join("")+"</tbody>";
+}
+$("#u-val").oninput=units;$("#u-from").onchange=units;units();
+function dl(){
+  const sz=parseFloat($("#t-size").value.replace(",",".")), rt=parseFloat($("#t-rate").value.replace(",","."));
+  $("#t-err").textContent="";
+  if(!(sz>0)||!(rt>0)){$("#t-err").textContent="Entre une taille et un débit supérieurs à 0.";$("#t-res").textContent="";$("#t-how").textContent="";return}
+  const SB={Mo:8e6,Go:8e9,Mio:8*2**20,Gio:8*2**30}, RB={"kbit/s":1e3,"Mbit/s":1e6,"Gbit/s":1e9};
+  const su=$("#t-su").value,ru=$("#t-ru").value, bits=sz*SB[su], rate=rt*RB[ru], sec=bits/rate;
+  const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s2=sec%60;
+  const txt=(h?h+" h ":"")+(h||m?m+" min ":"")+(sec<10?nf(s2):Math.round(s2))+" s";
+  $("#t-res").innerHTML=`${txt}<small> (temps théorique)</small>`;
+  const ru1=ru.replace("/s","");
+  $("#t-how").textContent=`${nf(sz)} ${su} = ${nf(bits/RB[ru])} ${ru1} (on multiplie par 8 pour passer en bits). ${nf(bits/RB[ru])} ${ru1} ÷ ${nf(rt)} ${ru} = ${nf(sec)} s. Soit un débit utile de ${nf(rate/8/1e6)} Mo/s.`;
+}
+["#t-size","#t-rate"].forEach(k=>$(k).oninput=dl);["#t-su","#t-ru"].forEach(k=>$(k).onchange=dl);dl();
+
+/* ---- 7. exercices et évaluations ---- */
+const LABEL={d2b:["décimal","binaire",10,2],b2d:["binaire","décimal",2,10],b2h:["binaire","hexadécimal",2,16],h2b:["hexadécimal","binaire",16,2],d2h:["décimal","hexadécimal",10,16],h2d:["hexadécimal","décimal",16,10],uni:["","",10,10]};
+const TNAME={d2b:"Déc → Bin",b2d:"Bin → Déc",b2h:"Bin → Hex",h2b:"Hex → Bin",d2h:"Déc → Hex",h2d:"Hex → Déc",uni:"Unités"};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const sp=n=>n.toLocaleString("fr-FR").replace(/ | /g," ");
+function fmt(v,base,bits){ if(base===10) return String(v); if(base===2) return grp(pad(v.toString(2),bits)); return pad(v.toString(16).toUpperCase(),bits/4); }
+function norm(s,base){ s=s.replace(/\s/g,"").toUpperCase(); if(base===10){if(!/^\d+$/.test(s))return null;return parseInt(s,10)}
+  if(base===2){if(!/^[01]+$/.test(s))return null;return parseInt(s,2)} if(!/^[0-9A-F]+$/.test(s))return null;return parseInt(s,16) }
+function genUnit(){
+  const T=[
+    ()=>{const x=ri(2,64);return[`${x} octets`,"bits",x*8,`1 octet = 8 bits, donc ${x} × 8.`]},
+    ()=>{const x=ri(2,32)*8;return[`${x} bits`,"octets",x/8,`8 bits = 1 octet, donc ${x} ÷ 8.`]},
+    ()=>{const x=ri(2,9);return[`${x} ko`,"octets",x*1000,`1 ko = 1 000 octets, donc ${x} × 1 000.`]},
+    ()=>{const x=ri(2,9);return[`${x} Go`,"Mo",x*1000,`1 Go = 1 000 Mo, donc ${x} × 1 000.`]},
+    ()=>{const x=ri(2,9);return[`${x} To`,"Go",x*1000,`1 To = 1 000 Go, donc ${x} × 1 000.`]},
+    ()=>{const x=ri(2,8);return[`${x} Kio`,"octets",x*1024,`1 Kio = 1 024 octets, donc ${x} × 1 024.`]},
+    ()=>{const x=ri(2,8);return[`${x} Gio`,"Mio",x*1024,`1 Gio = 1 024 Mio, donc ${x} × 1 024.`]},
+    ()=>{const x=ri(2,12)*1000;return[`${sp(x)} Mo`,"Go",x/1000,`1 000 Mo = 1 Go, donc ${sp(x)} ÷ 1 000.`]},
+    ()=>{const x=ri(1,8)*1024;return[`${sp(x)} Mio`,"Gio",x/1024,`1 024 Mio = 1 Gio, donc ${sp(x)} ÷ 1 024.`]},
+    ()=>{const x=ri(1,12)*8;return[`un débit de ${x} Mbit/s`,"Mo/s",x/8,`8 bits = 1 octet, donc ${x} ÷ 8.`]},
+    ()=>{const x=ri(1,8);return[`${x} Mo`,"Mbit",x*8,`1 octet = 8 bits, donc ${x} × 8.`]}
+  ];
+  const[a,to,ans,how]=T[ri(0,T.length-1)]();
+  return{text:`Convertis <b>${a}</b> en <strong>${to}</strong>.`,label:`${a} → ${to}`,ans,to,how};
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+/* ordre mélangé où deux questions voisines ne sont pas du même type (quand c'est possible) */
+function mixOrder(list){let best=shuffle(list.slice());
+  for(let k=0;k<60;k++){const c=shuffle(list.slice());const bad=c.filter((x,i)=>i&&x.t===c[i-1].t).length;
+    if(bad<best.filter((x,i)=>i&&x.t===best[i-1].t).length)best=c;if(!bad)break}
+  return best}
+function genQ(t){return t==="uni"?{t,v:0,u:genUnit()}:{t,v:ri(1,255)}}
+const expected=q=>q.u?q.u.ans:q.v;
+const expStr=q=>q.u?sp(q.u.ans)+" "+q.u.to:fmt(q.v,LABEL[q.t][3],8);
+function qHTML(q){
+  if(q.u) return q.u.text+` <span class="hint">(réponse en nombre entier)</span>`;
+  const[from,to,bf]=LABEL[q.t];
+  return `Convertis en <strong>${to}</strong> le nombre ${from} :<br><b>${fmt(q.v,bf,8)}</b> <span class="hint">(${bf})</span>`;
+}
+const qPlain=q=>q.u?q.u.label:`${fmt(q.v,LABEL[q.t][2],8)} (base ${LABEL[q.t][2]}) → base ${LABEL[q.t][3]}`;
+const qShort=q=>q.u?q.u.label:`${fmt(q.v,LABEL[q.t][2],8)}<sub>${LABEL[q.t][2]}</sub> → base ${LABEL[q.t][3]}`;
+const wts=v=>{const r=[];for(let w=128;w>=1;w/=2) if(v&w) r.push(w);return r};
+const hv=c=>/[A-F]/.test(c)?`${c} (= ${parseInt(c,16)})`:c;
+function explain(q){
+  if(q.u) return q.u.how;
+  const v=q.v,b=pad(v.toString(2),8),h=pad(v.toString(16).toUpperCase(),2);
+  switch(q.t){
+    case "d2b": return `Tableau binaire : ${v} = ${wts(v).join(" + ")}. On écrit 1 sous ces poids et 0 sous les autres : <b>${grp(b)}</b>.`;
+    case "b2d": return `On additionne les poids des bits à 1 : ${wts(v).join(" + ")} = <b>${v}</b>.`;
+    case "b2h": return `Deux quartets : ${b.slice(0,4)} → ${hv(h[0])} et ${b.slice(4)} → ${hv(h[1])}, donc <b>${h}</b>.`;
+    case "h2b": return `Chaque chiffre donne 4 bits : ${hv(h[0])} → ${b.slice(0,4)} et ${hv(h[1])} → ${b.slice(4)}, donc <b>${grp(b)}</b>.`;
+    case "h2d": return `${hv(h[0])} × 16 + ${hv(h[1])} × 1 = ${parseInt(h[0],16)*16} + ${parseInt(h[1],16)} = <b>${v}</b>.`;
+    case "d2h": return `${v} ÷ 16 = ${Math.floor(v/16)} reste ${v%16} : ${hv(h[0])} à gauche, ${hv(h[1])} à droite, donc <b>${h}</b>.`;
+  }
+}
+const HINT={d2b:"Commence par le poids 128 : le nombre est-il au moins égal à 128 ? Si oui, écris 1 et retire 128. Continue avec 64, 32, 16, 8, 4, 2, 1.",
+  b2d:"Écris les poids 128 64 32 16 8 4 2 1 au-dessus des 8 bits, puis additionne les poids placés au-dessus d'un 1.",
+  b2h:"Coupe le nombre en deux quartets de 4 bits. Chaque quartet vaut de 0 à 15, soit un chiffre de 0 à F (poids 8 4 2 1).",
+  h2b:"Chaque chiffre hexadécimal devient 4 bits avec les poids 8 4 2 1. Exemple : A = 10 = 8 + 2 = 1010.",
+  h2d:"Le chiffre de gauche se multiplie par 16, celui de droite par 1. Rappel : A=10, B=11, C=12, D=13, E=14, F=15.",
+  d2h:"Divise le nombre par 16 : le quotient donne le chiffre de gauche, le reste celui de droite.",
+  uni:"Rappel : 1 octet = 8 bits. Préfixes décimaux (ko, Mo, Go) : ×1 000. Préfixes binaires (Kio, Mio, Gio) : ×1 024."};
+
+/* exercices */
+function makeExo(root,types){
+  root.innerHTML=`<div class="card">
+   <div class="row" style="justify-content:space-between"><div><h2>Exercices</h2><p class="hint" style="margin:0">Entraîne-toi autant que tu veux. Ces exercices ne sont pas notés${types.includes("uni")?"":" ; les nombres sont tirés au hasard entre 1 et 255"}.</p></div>
+   <div class="row"><span class="pill g x-ok"></span><span class="pill r x-ko"></span><span class="pill m x-serie"></span></div></div>
+   <div class="qbox" style="margin-top:14px">
+    <div class="qtext x-q"></div>
+    <form class="row x-form" autocomplete="off"><input class="mono x-in" style="flex:1;min-width:180px" aria-label="Ta réponse"><button class="btn" type="submit">Vérifier</button></form>
+    <div class="x-fb"></div>
+    <div class="row"><button class="btn ghost small x-hint" type="button">Indice</button><button class="btn ghost small x-sol" type="button">Voir la correction</button><button class="btn small x-new" type="button">Nouvel exercice →</button></div>
+   </div></div>`;
+  const r=sel=>root.querySelector(sel); let q,ok=0,ko=0,serie=0,done=false;
+  const upd=()=>{r(".x-ok").textContent=`${ok} juste${ok>1?"s":""}`;r(".x-ko").textContent=`${ko} faux`;r(".x-serie").textContent=`série : ${serie}`};
+  let bag=[],last=null;
+  function nextType(){if(!bag.length){bag=shuffle(types.slice());if(bag.length>1&&bag[bag.length-1]===last)bag.unshift(bag.pop())}return last=bag.pop()}
+  function nw(){q=genQ(nextType());done=false;r(".x-q").innerHTML=qHTML(q);
+    const inp=r(".x-in");inp.value="";inp.disabled=false;inp.setAttribute("inputmode",LABEL[q.t][3]===16?"text":"numeric");r(".x-fb").innerHTML=""}
+  r(".x-form").onsubmit=e=>{e.preventDefault();if(done)return;const raw=r(".x-in").value;if(!raw.trim())return;
+    const bt=LABEL[q.t][3],v=norm(raw,bt);
+    if(v===null){r(".x-fb").innerHTML=`<div class="fb bad">Caractère non autorisé en base ${bt}. Corrige ta saisie.</div>`;return}
+    if(v===expected(q)){if(!q.miss){ok++;serie++}done=true;r(".x-in").disabled=true;r(".x-fb").innerHTML=`<div class="fb ok">Bravo, c'est juste. ${explain(q)}</div>`}
+    else{if(!q.miss){ko++;q.miss=1}serie=0;r(".x-fb").innerHTML=`<div class="fb bad">Ce n'est pas ça. Réessaie, demande un indice ou affiche la correction.</div>`}
+    upd()};
+  r(".x-hint").onclick=()=>{if(!done)r(".x-fb").innerHTML=`<div class="fb tip"><strong>Indice :</strong> ${HINT[q.t]}</div>`};
+  r(".x-sol").onclick=()=>{if(!done&&!q.miss){ko++;serie=0}done=true;r(".x-in").disabled=true;upd();
+    r(".x-fb").innerHTML=`<div class="fb sol"><strong>Correction : ${expStr(q)}</strong><br>${explain(q)}</div>`};
+  r(".x-new").onclick=()=>{nw();r(".x-in").focus()};
+  nw();upd();
+}
+
+/* évaluations */
+const CLASSES=["2nde MTNE1","2nde MTNE2","2nde MTNE3","1BP CIEL","Term BP CIEL"];
+function makeEval(root,o){
+  const P="ev-"+o.course;
+  root.innerHTML=`<div class="card e-config">
+    <h2>${o.title}</h2><p class="hint">${o.intro}</p>
+    <div class="grid3">
+      <div><label for="${P}-nb">Nombre de questions</label><select id="${P}-nb" class="e-nb"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+      <div><label for="${P}-mode">Correction</label><select id="${P}-mode" class="e-mode"><option value="direct">Immédiate après chaque question</option><option value="fin">À la fin du test</option></select></div>
+      <div><label for="${P}-temps">Temps limite</label><select id="${P}-temps" class="e-temps"><option value="0">Aucun</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select></div>
+    </div>
+    <div class="err e-err"></div>
+    <div class="row" style="margin-top:6px"><button class="btn e-start" type="button">Lancer l'évaluation</button></div>
+  </div>
+  <div class="card e-run" hidden><div class="qbox">
+    <div class="qhead"><span class="q-num"></span><span class="q-timer"></span></div>
+    <div class="progress"><i class="q-prog"></i></div>
+    <div class="qtext q-text"></div>
+    <form class="row q-form" autocomplete="off"><input class="mono q-ans" style="flex:1;min-width:180px" aria-label="Ta réponse"><button class="btn q-ok" type="submit">Valider</button></form>
+    <div class="q-fb"></div>
+    <div class="row"><button class="btn ghost small q-next" type="button" hidden>Question suivante →</button><button class="btn ghost small q-quit" type="button">Abandonner</button></div>
+  </div></div>
+  <div class="card e-end" hidden>
+    <div class="row" style="justify-content:space-between;align-items:flex-end"><div><h2 class="end-name"></h2><p class="hint end-detail" style="margin:0"></p></div><div class="score end-score"></div></div>
+    <div class="tbl" style="margin-top:14px"><table><thead><tr><th>#</th><th>Question</th><th>Ta réponse</th><th>Attendu</th><th></th></tr></thead><tbody class="end-body"></tbody></table></div>
+    <div class="row" style="margin-top:12px"><button class="btn end-again" type="button">Nouvelle évaluation</button></div>
+    <div class="end-xmsg" style="margin-top:10px"></div>
+  </div>`;
+  const r=sel=>root.querySelector(sel);
+  let Q=[],qi=0,ans=[],cfg={},t0=0,timer=null,locked=false;
+  root._stop=()=>clearInterval(timer);
+  const view=k=>{r(".e-config").hidden=k!=="config";r(".e-run").hidden=k!=="run";r(".e-end").hidden=k!=="end"};
+  r(".e-start").onclick=()=>{
+    const types=o.types;
+    if(!ME) return show("login");
+    r(".e-err").textContent="";
+    cfg={nom:ME.nom,prenom:ME.prenom,classe:ME.classe,nb:+r(".e-nb").value,mode:r(".e-mode").value,temps:+r(".e-temps").value};
+    Q=[];const used=new Set();
+    for(let i=0;i<cfg.nb;i++){const t=types[i%types.length];let q,k=0;do{q=genQ(t);k++}while(!q.u&&used.has(t+q.v)&&k<20);used.add(t+q.v);Q.push(q)}
+    Q=mixOrder(Q);qi=0;ans=[];t0=Date.now();view("run");
+    clearInterval(timer);if(cfg.temps)timer=setInterval(tick,1000);tick();ask();
+  };
+  function tick(){const el=Math.floor((Date.now()-t0)/1000),f=x=>`${Math.floor(x/60)}:${pad(String(x%60),2)}`;
+    if(cfg.temps){const rem=Math.max(cfg.temps*60-el,0);r(".q-timer").textContent="Temps restant "+f(rem);if(rem<=0){clearInterval(timer);finish()}}
+    else r(".q-timer").textContent=f(el)}
+  function ask(){const q=Q[qi];locked=false;
+    r(".q-num").textContent=`Question ${qi+1} / ${Q.length}`;r(".q-prog").style.width=(qi/Q.length*100)+"%";
+    r(".q-text").innerHTML=qHTML(q);const a=r(".q-ans");a.value="";a.disabled=false;r(".q-ok").disabled=false;
+    r(".q-fb").innerHTML="";r(".q-next").hidden=true;a.setAttribute("inputmode",LABEL[q.t][3]===16?"text":"numeric");a.focus()}
+  r(".q-form").onsubmit=e=>{e.preventDefault();if(locked)return;
+    const q=Q[qi],bt=LABEL[q.t][3],raw=r(".q-ans").value;if(!raw.trim())return;
+    const v=norm(raw,bt);
+    if(v===null){r(".q-fb").innerHTML=`<div class="fb bad">Caractère non autorisé en base ${bt}. Corrige ta saisie.</div>`;return}
+    const ok=v===expected(q);ans.push({raw:raw.trim().toUpperCase(),ok});locked=true;r(".q-ans").disabled=true;r(".q-ok").disabled=true;
+    if(cfg.mode==="direct"){
+      r(".q-fb").innerHTML=ok?`<div class="fb ok">Correct.</div>`:`<div class="fb bad">Incorrect. Réponse attendue : <b>${expStr(q)}</b><br>${explain(q)}</div>`;
+      const n=r(".q-next");n.hidden=false;n.textContent=qi+1<Q.length?"Question suivante →":"Voir mon résultat →";n.focus();
+    } else next()};
+  function next(){qi++;if(qi<Q.length)ask();else finish()}
+  r(".q-next").onclick=next;
+  r(".q-quit").onclick=()=>{clearInterval(timer);view("config")};
+  r(".end-again").onclick=()=>view("config");
+  function finish(){clearInterval(timer);
+    const good=ans.filter(a=>a.ok).length,note=Math.round(good/Q.length*20*2)/2,dur=Math.round((Date.now()-t0)/1000);
+    view("end");
+    r(".end-name").textContent=`${cfg.nom} ${cfg.prenom} — ${cfg.classe}`;
+    r(".end-detail").textContent=`${o.label} · ${good} bonne${good>1?"s":""} réponse${good>1?"s":""} sur ${Q.length} · ${Math.floor(dur/60)} min ${dur%60} s`+(ans.length<Q.length?` · temps écoulé (${Q.length-ans.length} sans réponse)`:"");
+    r(".end-score").innerHTML=`${String(note).replace(".",",")}<span style="font-size:24px;color:var(--muted)">/20</span>`;
+    r(".end-body").innerHTML=Q.map((q,i)=>{const a=ans[i];
+      return `<tr><td>${i+1}</td><td>${qShort(q)}</td><td>${a?a.raw:"—"}</td><td>${expStr(q)}</td><td><span class="pill ${a&&a.ok?"g":"r"}">${a&&a.ok?"juste":"faux"}</span></td></tr>`}).join("");
+    const details=Q.map((q,i)=>({t:q.t,q:qPlain(q),rep:ans[i]?ans[i].raw:"",att:expStr(q),ok:!!(ans[i]&&ans[i].ok)}));
+    const rec={date:new Date().toLocaleString("fr-FR"),ts:Date.now(),eval:o.label,score:`${good}/${Q.length}`,note,duree:dur,details};
+    saveResult({nom:cfg.nom,prenom:cfg.prenom,classe:cfg.classe},rec,r(".end-xmsg"));
+  }
+}
+
+/* étude des cours choisis : un seul onglet Cours, Exercices et Évaluation */
+const COURSE_TYPES={"convertir":["d2h"],"dec-bin":["d2b"],"bin-dec":["b2d"],"bin-hex":["b2h","h2b"],"hex-dec":["h2d"],"unites":["uni"]};
+const SHORT={"generale":"Évaluation générale","convertir":"Convertisseur","dec-bin":"Déc → Bin","bin-dec":"Bin → Déc","bin-hex":"Bin ↔ Hex","hex-dec":"Hex → Déc","unites":"Unités"};
+const ALLT=["d2b","b2d","b2h","h2b","d2h","h2d","uni"];
+const etTabs=[...document.querySelectorAll("#et-tabs button")];
+function etShow(p){etTabs.forEach(x=>x.setAttribute("aria-selected",x.dataset.p===p));
+  document.querySelectorAll("#etude > .pane").forEach(pn=>pn.hidden=pn.dataset.pane!==p);window.scrollTo({top:0})}
+etTabs.forEach(b=>b.onclick=()=>etShow(b.dataset.p));
+function startStudy(){
+  const gen=sel.includes("generale"), list=ordered().filter(id=>id!=="generale");
+  document.querySelectorAll("#etude .cblock").forEach(b=>b.hidden=!list.includes(b.dataset.c));
+  const chips=$("#et-chips"); chips.hidden=list.length<2;
+  chips.innerHTML=list.map(id=>`<button type="button" class="btn ghost small" data-c="${id}">${SHORT[id]}</button>`).join("");
+  chips.querySelectorAll("button").forEach(b=>b.onclick=()=>{const el=document.querySelector(`#etude .cblock[data-c="${b.dataset.c}"]`);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})});
+  const types=ALLT.filter(t=>list.some(id=>(COURSE_TYPES[id]||[]).includes(t)));
+  const names=list.map(id=>SHORT[id]).join(" + ");
+  const evTypes=gen?ALLT.slice():types;
+  const onlyUnits=evTypes.length===1&&evTypes[0]==="uni";
+  const exo=$("#et-exo"),ev=$("#et-eval");
+  if(ev._stop) ev._stop();
+  etTabs.forEach(b=>{if(b.dataset.p!=="eval")b.hidden=!list.length});
+  if(list.length){makeExo(exo,types);const h=exo.querySelector("h2");if(h)h.textContent="Exercices — "+names}
+  makeEval(ev,gen
+    ?{course:"etude",label:"Évaluation générale",title:"Évaluation générale",types:evTypes,
+      intro:"Sur tous les cours : conversions binaire, décimal et hexadécimal (nombres de 1 à 255) et unités en informatique, mélangées. La note est calculée sur 20 et enregistrée."}
+    :{course:"etude",label:names,title:"Évaluation",types:evTypes,
+      intro:`Sur ${list.length>1?"les cours":"le cours"} : ${names}. `+(onlyUnits?"Des conversions d'unités tirées au hasard.":"Des nombres tirés au hasard entre 1 et 255.")+" La note est calculée sur 20 et enregistrée."});
+  document.querySelectorAll("#etude input.mono").forEach(el=>{el.setAttribute("autocapitalize","characters");el.setAttribute("autocorrect","off");el.setAttribute("spellcheck","false")});
+  etShow(list.length?"cours":"eval");
+}
+
+const resKey=id=>"binhexdec_res|"+[id.nom,id.prenom,id.classe].join("|");
+function loadMine(id){try{const a=JSON.parse(localStorage.getItem(resKey(id)));return Array.isArray(a)?a:[]}catch(e){return []}}
+function saveResult(id,rec,box){
+  const all=loadMine(id).concat([{date:rec.date,eval:rec.eval,score:rec.score,note:rec.note}]);
+  try{localStorage.setItem(resKey(id),JSON.stringify(all));box.innerHTML=`<div class="fb ok">Résultat ajouté à « Mes résultats ».</div>`}
+  catch(e){box.innerHTML=`<div class="fb bad">Résultat non enregistré sur ce téléphone.</div>`}
+  renderMine();
+}
+function renderMine(){
+  const box=$("#mine"); if(!box) return;
+  if(!window.__meReady||!ME){box.hidden=true;return}
+  box.hidden=false; const recs=loadMine(ME).slice().reverse();
+  const moy=recs.length?Math.round(recs.reduce((a,x)=>a+x.note,0)/recs.length*10)/10:0;
+  $("#mine-sum").textContent=recs.length?`${recs.length} évaluation${recs.length>1?"s":""} · moyenne ${String(moy).replace(".",",")}/20`:"Aucune évaluation pour l'instant.";
+  $("#mine-body").innerHTML=recs.map(x=>{const c=x.note>=14?"g":x.note>=10?"m":"r";
+    return `<tr><td>${x.date.slice(0,10)}</td><td>${x.eval}</td><td><span class="pill ${c}">${String(x.note).replace(".",",")}</span></td></tr>`}).join("");
+  box.querySelector("table").hidden=!recs.length;
+}
+
+/* identité de l'élève */
+const MEKEY="binhexdec_ciel_eleve";
+let ME=(()=>{try{const v=JSON.parse(localStorage.getItem(MEKEY));return v&&v.nom&&v.classe?v:null}catch(e){return null}})();
+$("#lg-classe").innerHTML+=CLASSES.map(c=>`<option>${c}</option>`).join("");
+function showMe(){$("#who").hidden=!ME;if(ME)$("#who-txt").textContent=`${ME.nom} ${ME.prenom} · ${ME.classe}`;}
+const NAMERE=/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' -]*$/;
+$("#lg-form").onsubmit=e=>{e.preventDefault();
+  const nom=$("#lg-nom").value.trim().replace(/\s+/g," ").toUpperCase(), pre=$("#lg-prenom").value.trim().replace(/\s+/g," "), cl=$("#lg-classe").value;
+  if(!nom||!NAMERE.test(nom)) return $("#lg-err").textContent="Écris ton nom (lettres, espaces, tirets ou apostrophes).";
+  if(!pre||!NAMERE.test(pre)) return $("#lg-err").textContent="Écris ton prénom (lettres, espaces, tirets ou apostrophes).";
+  if(!cl) return $("#lg-err").textContent="Choisis ta classe dans la liste.";
+  $("#lg-err").textContent="";
+  const prenom=pre.split(/([ -])/).map(w=>/[ -]/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join("");
+  ME={nom,prenom,classe:cl};try{localStorage.setItem(MEKEY,JSON.stringify(ME))}catch(err){}
+  showMe();renderMine();go("menu");
+};
+window.__meReady=true;
+showMe();renderMine();
+show(location.hash.slice(1));
+
+document.querySelectorAll("input.mono").forEach(el=>{el.setAttribute("autocapitalize","characters");el.setAttribute("autocorrect","off");el.setAttribute("spellcheck","false")});
+if("serviceWorker" in navigator && location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+
+</body>
+</html>
