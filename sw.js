@@ -1,6 +1,6 @@
 /* Service worker Bin·Hex·Déc : l'application fonctionne hors ligne.
    Après une mise à jour des fichiers, augmenter le numéro de VERSION. */
-const VERSION = "binhexdec-v12";
+const VERSION = "binhexdec-v13";
 const FILES = [
   "./",
   "./index.html",

@@ -470,6 +470,7 @@ function show(id){
   else if(!["menu","etude"].includes(id)||(id==="etude"&&!sel.length)) id="menu";
   tabs.forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));
   if(id==="menu"&&sel.length){sel=[];saveSel();renderMenu()}
+  if(id==="etude"&&studyKey!==sel.join(",")) startStudy();
   document.getElementById("nav").hidden=(id==="menu"||id==="login");
   document.querySelectorAll("section").forEach(s=>s.hidden=s.id!==id);
   $("#pager").hidden=true;
@@ -816,7 +817,9 @@ const etTabs=[...document.querySelectorAll("#et-tabs button")];
 function etShow(p){etTabs.forEach(x=>x.setAttribute("aria-selected",x.dataset.p===p));
   document.querySelectorAll("#etude > .pane").forEach(pn=>pn.hidden=pn.dataset.pane!==p);window.scrollTo({top:0})}
 etTabs.forEach(b=>b.onclick=()=>etShow(b.dataset.p));
+let studyKey="";
 function startStudy(){
+  studyKey=sel.join(",");
   const gen=sel.includes("generale"), list=ordered().filter(id=>id!=="generale");
   document.querySelectorAll("#etude .cblock").forEach(b=>b.hidden=!list.includes(b.dataset.c));
   const chips=$("#et-chips"); chips.hidden=list.length<2;

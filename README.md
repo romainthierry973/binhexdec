@@ -24,7 +24,7 @@ Fonctionne sur ordinateur, tablette et smartphone (Android et iPhone), y compris
 ## Mettre à jour
 
 1. Modifier ou remplacer les fichiers du dépôt.
-2. Dans `sw.js`, augmenter le numéro de version : `const VERSION = "binhexdec-v12";` → `"binhexdec-v13"`.
+2. Dans `sw.js`, augmenter le numéro de version, par exemple `const VERSION = "binhexdec-v13";` → `"binhexdec-v14"`.
 3. Les appareils récupèrent la nouvelle version à la prochaine ouverture avec du réseau.
 
 Les résultats des élèves restent sur leur appareil : aucune donnée n'est envoyée ni stockée dans ce dépôt.
